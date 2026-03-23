@@ -13,6 +13,6 @@ data class UpcycleProject(
 sealed class UpcycleState {
     object Idle : UpcycleState()
     object Loading : UpcycleState() // When Gemini is thinking
-    data class Success(val project: UpcycleProject) : UpcycleState()
+    data class Success(val projects: List<UpcycleProject>) : UpcycleState()
     data class Error(val message: String) : UpcycleState()
 }

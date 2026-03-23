@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.abhinav.upcycleengine.ui.theme.UpcycleEngineTheme
 import com.abhinav.upcycleengine.ui.ScannerScreen // Import your new screen
 import androidx.compose.foundation.layout.Box
+import com.abhinav.upcycleengine.ui.UpcycleAppRouter
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,14 +24,16 @@ class MainActivity : ComponentActivity() {
             UpcycleEngineTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        ScannerScreen()
+
+                        // 🌟 THIS IS THE ONLY LINE THAT CHANGES!
+                        UpcycleAppRouter()
+
                     }
                 }
             }
         }
     }
 }
-
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
