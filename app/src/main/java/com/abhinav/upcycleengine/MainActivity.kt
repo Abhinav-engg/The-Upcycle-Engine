@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.abhinav.upcycleengine.ui.theme.UpcycleEngineTheme
-import com.abhinav.upcycleengine.ui.ScannerScreen // Import your new screen
+import com.abhinav.upcycleengine.ui.ScannerScreen 
 import androidx.compose.foundation.layout.Box
 import com.abhinav.upcycleengine.ui.UpcycleAppRouter
 
@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
 
-                        // 🌟 THIS IS THE ONLY LINE THAT CHANGES!
+                        
                         UpcycleAppRouter()
 
                     }

@@ -49,7 +49,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 
-// --- ROUTER: Controls which screen we see ---
+
 @Composable
 fun UpcycleAppRouter(viewModel: UpcycleViewModel = androidx.lifecycle.viewmodel.compose.viewModel()) {
     var showCamera by remember { mutableStateOf(false) }
@@ -57,19 +57,22 @@ fun UpcycleAppRouter(viewModel: UpcycleViewModel = androidx.lifecycle.viewmodel.
     if (!showCamera) {
         LandingScreen(
             onOpenCamera = {
-                //viewModel.selectedDifficulty = "Surprise Me"
+                
                 showCamera = true
             }
         )
     } else {
-        ScannerScreen(viewModel = viewModel)
+        ScannerScreen(
+            viewModel = viewModel,
+            onNavigateBack = { showCamera = false }
+        )
     }
 }
 
-// --- SCREEN 1: THE CAMERA ---
+
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun ScannerScreen(viewModel: UpcycleViewModel) {
+fun ScannerScreen(viewModel: UpcycleViewModel, onNavigateBack: () -> Unit) { 
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
     var detectedWaste by remember { mutableStateOf<DetectedWaste?>(null) }
     val imageCapture = remember { ImageCapture.Builder().build() }
@@ -78,6 +81,7 @@ fun ScannerScreen(viewModel: UpcycleViewModel) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     if (cameraPermissionState.status.isGranted) {
+        
         Box(modifier = Modifier.fillMaxSize()) {
 
             CameraPreview(
@@ -87,6 +91,17 @@ fun ScannerScreen(viewModel: UpcycleViewModel) {
 
             detectedWaste?.let { waste ->
                 DrawBoundingBoxOverlay(waste)
+            }
+
+            
+            IconButton(
+                onClick = onNavigateBack,
+                modifier = Modifier
+                    .align(Alignment.TopEnd) 
+                    .padding(top = 48.dp, end = 16.dp)
+                    .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+            ) {
+                Icon(androidx.compose.material.icons.Icons.Filled.ArrowBack, contentDescription = "Go Back", tint = Color.White)
             }
 
             FloatingActionButton(
@@ -107,11 +122,11 @@ fun ScannerScreen(viewModel: UpcycleViewModel) {
                 Icon(Icons.Filled.CameraAlt, contentDescription = "Capture Waste", modifier = Modifier.size(36.dp))
             }
 
-            // The Result Screen Overlay
+            
             ResultOverlay(
                 uiState = uiState,
                 onClose = { viewModel.resetState() },
-                onReroll = { viewModel.rerollIdeas() } // 🌟 Added Reroll logic!
+                onReroll = { viewModel.rerollIdeas() }
             )
         }
     } else {
@@ -123,7 +138,7 @@ fun ScannerScreen(viewModel: UpcycleViewModel) {
     }
 }
 
-// --- CAMERA HELPER FUNCTIONS ---
+
 @Composable
 fun CameraPreview(imageCapture: ImageCapture, onWasteDetected: (DetectedWaste?) -> Unit) {
     val context = LocalContext.current
@@ -198,7 +213,7 @@ private fun captureAndProcessImage(
             override fun onCaptureSuccess(image: ImageProxy) {
                 try {
                     val rawBitmap = image.toBitmap()
-                    val maxDim = 400f // Optimized for speed
+                    val maxDim = 400f 
                     val scale = kotlin.math.min(maxDim / rawBitmap.width, maxDim / rawBitmap.height)
                     val resizedBitmap = if (scale < 1) {
                         Bitmap.createScaledBitmap(rawBitmap, (rawBitmap.width * scale).toInt(), (rawBitmap.height * scale).toInt(), true)
@@ -218,13 +233,13 @@ private fun captureAndProcessImage(
     )
 }
 
-// --- RESULT & LOADING UI ---
+
 @Composable
 fun ResultOverlay(uiState: UpcycleState, onClose: () -> Unit, onReroll: () -> Unit) {
     val haptics = LocalHapticFeedback.current
 
     when (uiState) {
-        is UpcycleState.Idle -> { /* Camera active */ }
+        is UpcycleState.Idle -> {  }
 
         is UpcycleState.Loading -> {
             val facts = listOf(
@@ -310,7 +325,7 @@ fun ResultOverlay(uiState: UpcycleState, onClose: () -> Unit, onReroll: () -> Un
                                 style = MaterialTheme.typography.headlineSmall,
                                 fontWeight = FontWeight.Bold
                             )
-                            // 🌟 Added Re-roll and Close buttons together!
+                            
                             Row {
                                 IconButton(onClick = onReroll) {
                                     Icon(Icons.Filled.Refresh, contentDescription = "Regenerate Ideas", tint = Color.White)
@@ -455,7 +470,7 @@ fun ExpandableProjectCard(project: UpcycleProject) {
     }
 }
 
-// --- SCREEN 0: THE FIGMA LANDING PAGE ---
+
 @Composable
 fun LandingScreen(onOpenCamera: () -> Unit) {
     val darkBg = Color(0xFF101611)
@@ -471,6 +486,7 @@ fun LandingScreen(onOpenCamera: () -> Unit) {
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -503,10 +519,26 @@ fun LandingScreen(onOpenCamera: () -> Unit) {
             }
         }
 
+        
+        val facts = listOf(
+            Pair("91%", "of all plastic ever produced has never been recycled — it ends up in landfills or oceans instead."),
+            Pair("500", "years is how long it takes for a standard plastic toothbrush to decompose in a landfill."),
+            Pair("7x", "is the number of times cardboard can be recycled before its fibers become too short to use.")
+        )
+
+        var currentFactIndex by remember { mutableIntStateOf(0) }
+
+        
+        LaunchedEffect(currentFactIndex) {
+            kotlinx.coroutines.delay(5000)
+            currentFactIndex = (currentFactIndex + 1) % facts.size
+        }
+
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 24.dp),
+                .padding(bottom = 24.dp)
+                .animateContentSize(), 
             colors = CardDefaults.cardColors(containerColor = cardBg),
             shape = RoundedCornerShape(24.dp)
         ) {
@@ -518,16 +550,16 @@ fun LandingScreen(onOpenCamera: () -> Unit) {
                 }
 
                 Text(
-                    text = "91%",
+                    text = facts[currentFactIndex].first, 
                     color = Color.White,
-                    fontSize = 72.sp,
+                    fontSize = 36.sp,
                     fontWeight = FontWeight.Black,
                     modifier = Modifier.padding(vertical = 4.dp),
                     fontStyle = FontStyle.Italic
                 )
 
                 Text(
-                    text = "of all plastic ever produced has never been recycled — it ends up in landfills or oceans instead.",
+                    text = facts[currentFactIndex].second, 
                     color = Color.White.copy(alpha = 0.8f),
                     fontSize = 16.sp,
                     lineHeight = 24.sp
@@ -540,16 +572,37 @@ fun LandingScreen(onOpenCamera: () -> Unit) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    
                     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Box(modifier = Modifier.height(6.dp).width(20.dp).background(accentGreen, CircleShape))
-                        Box(modifier = Modifier.size(6.dp).background(Color.Gray.copy(alpha = 0.5f), CircleShape))
-                        Box(modifier = Modifier.size(6.dp).background(Color.Gray.copy(alpha = 0.5f), CircleShape))
+                        facts.indices.forEach { index ->
+                            val isSelected = index == currentFactIndex
+                            Box(
+                                modifier = Modifier
+                                    .height(6.dp)
+                                    .width(if (isSelected) 20.dp else 6.dp)
+                                    .background(
+                                        if (isSelected) accentGreen else Color.Gray.copy(alpha = 0.5f),
+                                        CircleShape
+                                    )
+                                    
+                                    .clickable { currentFactIndex = index }
+                            )
+                        }
                     }
-                    Text("next fact >", color = accentGreen.copy(alpha = 0.7f), fontSize = 14.sp)
+                    
+                    Text(
+                        text = "next fact >",
+                        color = accentGreen.copy(alpha = 0.7f),
+                        fontSize = 14.sp,
+                        modifier = Modifier.clickable {
+                            currentFactIndex = (currentFactIndex + 1) % facts.size
+                        }
+                    )
                 }
             }
         }
 
+        
         Card(
             modifier = Modifier
                 .fillMaxWidth()
@@ -587,6 +640,7 @@ fun LandingScreen(onOpenCamera: () -> Unit) {
             }
         }
 
+        
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
