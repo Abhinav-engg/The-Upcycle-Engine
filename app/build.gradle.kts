@@ -59,32 +59,32 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
 
-    // CameraX core & UI
+    
     val cameraxVersion = "1.6.0-rc01"
     implementation("androidx.camera:camera-camera2:$cameraxVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
     implementation("androidx.camera:camera-view:$cameraxVersion")
-        // The CameraX to ML Kit Bridge
+        
     implementation("androidx.camera:camera-mlkit-vision:$cameraxVersion")
 
-    // The ML kit
+    
     implementation("com.google.mlkit:object-detection:17.0.2")
     implementation("com.google.mlkit:object-detection-custom:17.0.2")
 
-    // Generative AI
-        // Import the BoM for the Firebase platform
+    
+        
     implementation(platform("com.google.firebase:firebase-bom:34.10.0"))
-        // Add the dependency for the Firebase AI Logic library
-        // (No version needed here because the BoM handles it!)
+        
+        
     implementation("com.google.firebase:firebase-ai:17.10.0")
 
-    // Lifecycle
+    
     val lifecycleVersion = "2.10.0"
-        // 1. Gives you 'viewModelScope' so you can run Gemini API calls in the background
+        
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
-        // 2. Allows you to easily create and bind ViewModels inside your Compose screens
+        
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
-        // 3. Gives you 'collectAsStateWithLifecycle()', the safest way to read StateFlow in UI
+        
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
 
     implementation("androidx.compose.material:material-icons-extended:1.7.8")

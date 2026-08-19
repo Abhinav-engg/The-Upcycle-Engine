@@ -25,10 +25,10 @@ class UpcycleViewModel : ViewModel() {
     private var currentBitmap: Bitmap? = null
     private var currentLabel: String? = null
 
-    // 1. Initialize Gemini
+    
     private val generativeModel = Firebase.ai(backend = GenerativeBackend.googleAI())
         .generativeModel(
-            modelName = "gemini-2.5-flash-lite",
+            modelName = "gemini-2.5-flash",
             generationConfig = generationConfig {
                 responseMimeType = "application/json"
             },
@@ -55,12 +55,16 @@ class UpcycleViewModel : ViewModel() {
 
         viewModelScope.launch {
             try {
-                //  prompt for multiple ideas
+                
                 val promptText = "The local ML model identified this as: ${detectedLabel ?: "Unknown waste"}. " +
-                        "Provide exactly 4 distinct, creative upcycling project ideas for this exact item. " +
-                        "Vary the difficulty (e.g., 1 Easy, 2 Medium, 1 Hard)."
+                        "Provide exactly 4 upcycling project ideas for this item. " +
+                        "Ideally each idea should have the following : (1) minimize additional materials needed — prioritize using the item as-is or with household items only, "+
+                        "(2) maximize the functional lifespan of the final product — avoid purely decorative outcomes, " +
+                        "(3) have a clear, practical end-use that replaces something the user would otherwise buy. " +
+                        "Vary difficulty: 1 Easy (under 30 mins, no tools), 2 Medium (basic tools, under 2 hours), 1 Hard (advanced skills, high-value output). "
 
-                // call Gemini
+
+                
                 val response = generativeModel.generateContent(
                     content {
                         image(imageBitmap)
@@ -68,7 +72,7 @@ class UpcycleViewModel : ViewModel() {
                     }
                 )
 
-                // parse the JSON array response
+                
                 response.text?.let { jsonString ->
                     val projectsList = parseJsonToProjectList(jsonString)
                     _uiState.value = UpcycleState.Success(projectsList)
@@ -83,7 +87,7 @@ class UpcycleViewModel : ViewModel() {
         }
     }
 
-    // UPDATED: Parses a JSON Array and returns a List of UpcycleProjects
+    
     private fun parseJsonToProjectList(jsonString: String): List<UpcycleProject> {
         val cleanJson = jsonString.removePrefix("```json").removeSuffix("```").trim()
         val jsonArray = JSONArray(cleanJson)
@@ -114,10 +118,10 @@ class UpcycleViewModel : ViewModel() {
     fun resetState() {
         _uiState.value = UpcycleState.Idle
     }
-    // 🌟 NEW: The function the UI calls when you hit the refresh button
+    
     fun rerollIdeas() {
         currentBitmap?.let { savedBitmap ->
-            // Pass a slightly different prompt to force new ideas
+            
             _uiState.value = UpcycleState.Loading
             viewModelScope.launch {
                 try {
